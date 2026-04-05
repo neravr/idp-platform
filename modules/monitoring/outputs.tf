@@ -1,0 +1,1 @@
+output "grafana_url" { value = "https://grafana.${var.domain}" }
