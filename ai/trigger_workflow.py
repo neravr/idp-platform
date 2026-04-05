@@ -36,7 +36,7 @@ def trigger_provision(config: dict):
     try:
         with urllib.request.urlopen(req) as resp:
             if resp.status == 204:
-                print(f"Workflow triggered successfully.")
+                print(f"provision.yml triggered successfully.")
                 print(f"  Team:     {config['team_name']}")
                 print(f"  Tier:     {config['environment_tier']}")
                 print(f"  Template: {config['app_template']}")

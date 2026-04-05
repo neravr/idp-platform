@@ -60,3 +60,11 @@ jobs:
           | Tier | ${{ steps.parse.outputs.tier }} |
           | Template | ${{ steps.parse.outputs.template }} |
           EOF
+
+          - name: Trigger provision workflow
+        env:
+          GITHUB_TOKEN:      ${{ secrets.GH_DISPATCH_TOKEN }}
+          GITHUB_REPO_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO_NAME:  ${{ github.event.repository.name }}
+        run: |
+          echo '${{ steps.parse.outputs.config }}' | python ai/trigger_workflow.py
