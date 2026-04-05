@@ -1,0 +1,66 @@
+name: Provision environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      team_name:
+        description: "Team name"
+        required: true
+      environment_tier:
+        description: "Environment tier"
+        type: choice
+        options: [dev, staging, prod]
+        default: dev
+      app_template:
+        description: "Workload template"
+        type: choice
+        options: [api-service, data-pipeline, ml-workload]
+        default: api-service
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show provisioning plan
+        run: |
+          echo "========================================="
+          echo "  IDP Platform — Environment Provision"
+          echo "========================================="
+          echo ""
+          echo "  Team:      ${{ inputs.team_name }}"
+          echo "  Tier:      ${{ inputs.environment_tier }}"
+          echo "  Template:  ${{ inputs.app_template }}"
+          echo ""
+          echo "  Resources that would be created:"
+          echo "  - Resource group: rg-${{ inputs.team_name }}-${{ inputs.environment_tier }}"
+          echo "  - AKS cluster:    aks-${{ inputs.team_name }}-${{ inputs.environment_tier }}"
+          echo "  - Key Vault:      kv-${{ inputs.team_name }}-${{ inputs.environment_tier }}"
+          echo "  - App Gateway:    appgw-${{ inputs.team_name }}-${{ inputs.environment_tier }}"
+          echo "  - ACR:            acr${{ inputs.team_name }}${{ inputs.environment_tier }}"
+          echo "  - Monitoring:     Prometheus + Grafana"
+          echo "  - GitOps:         ArgoCD"
+          echo "  - Secrets:        HashiCorp Vault"
+          echo ""
+          echo "  Estimated time: ~10 minutes"
+          echo "  Template config: templates/${{ inputs.app_template }}.tfvars"
+          echo ""
+          echo "========================================="
+          echo "  [DRY RUN] No resources created"
+          echo "========================================="
+
+      - name: Job summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## Environment provisioning plan
+
+          | Field | Value |
+          |-------|-------|
+          | Team | ${{ inputs.team_name }} |
+          | Tier | ${{ inputs.environment_tier }} |
+          | Template | ${{ inputs.app_template }} |
+          | Resource group | rg-${{ inputs.team_name }}-${{ inputs.environment_tier }} |
+          | AKS cluster | aks-${{ inputs.team_name }}-${{ inputs.environment_tier }} |
+          | Status | DRY RUN — triggered by AI provisioner |
+          EOF
