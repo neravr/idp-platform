@@ -1,0 +1,62 @@
+name: AI environment provisioner
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: "Describe what you need (plain English)"
+        required: true
+        type: string
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Parse request with AI
+        id: parse
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd ai
+          CONFIG=$(python ai_provisioner.py "${{ inputs.request }}")
+          EXIT_CODE=$?
+
+          if [ $EXIT_CODE -eq 2 ]; then
+            echo "Clarification needed — re-run with more detail."
+            exit 1
+          fi
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "Parser failed."
+            exit 1
+          fi
+
+          echo "Parsed config:"
+          echo "$CONFIG" | python -m json.tool
+
+          echo "config=$CONFIG" >> $GITHUB_OUTPUT
+          echo "team=$(echo $CONFIG | python -c 'import sys,json; print(json.load(sys.stdin)["team_name"])')" >> $GITHUB_OUTPUT
+          echo "tier=$(echo $CONFIG | python -c 'import sys,json; print(json.load(sys.stdin)["environment_tier"])')" >> $GITHUB_OUTPUT
+          echo "template=$(echo $CONFIG | python -c 'import sys,json; print(json.load(sys.stdin)["app_template"])')" >> $GITHUB_OUTPUT
+
+      - name: Job summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## AI parsed your request as
+
+          | Field | Value |
+          |-------|-------|
+          | Request | ${{ inputs.request }} |
+          | Team | ${{ steps.parse.outputs.team }} |
+          | Tier | ${{ steps.parse.outputs.tier }} |
+          | Template | ${{ steps.parse.outputs.template }} |
+          EOF
