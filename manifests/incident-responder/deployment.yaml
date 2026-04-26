@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incident-responder
+  namespace: monitoring
+  labels:
+    app: incident-responder
+    team: platform
+    env: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: incident-responder
+  template:
+    metadata:
+      labels:
+        app: incident-responder
+        team: platform
+        env: dev
+    spec:
+      containers:
+        - name: incident-responder
+          image: YOUR_ACR_NAME.azurecr.io/incident-responder:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: incident-responder-secrets
+                  key: anthropic-api-key
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: incident-responder-secrets
+                  key: slack-webhook-url
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
