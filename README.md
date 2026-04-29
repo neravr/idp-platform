@@ -10,7 +10,7 @@ Built as a portfolio project to demonstrate end-to-end cloud infrastructure engi
 
 At most companies, getting a new cloud environment means opening a ticket and waiting for a DevOps engineer. It takes days. The environment comes back with inconsistent configuration, missing monitoring, and security settings that vary from team to team.
 
-This platform eliminates that entirely. A developer describes what they need. The AI figures out the right configuration. Ten minutes later they have a fully provisioned AKS cluster with monitoring, secrets management, and compliance policies already in place — identical every time.
+This platform eliminates that entirely. A developer describes what they need. The AI figures out the right configuration. Ten minutes later they have a fully provisioned AKS cluster with monitoring, secrets management, and compliance policies already in place, identical every time.
 
 ---
 
