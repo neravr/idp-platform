@@ -1,0 +1,55 @@
+name: Test incident responder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          cd incident-responder
+          pip install -r requirements.txt
+
+      - name: Start server and test
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          cd incident-responder
+
+          # Start the server in background
+          uvicorn main:app --host 0.0.0.0 --port 8080 &
+          SERVER_PID=$!
+
+          # Wait for it to start
+          sleep 5
+
+          # Health check
+          echo "Testing health endpoint..."
+          curl -f http://localhost:8080/health
+
+          # Fire a test alert — this calls Claude and sends to Slack
+          echo "Firing test alert..."
+          curl -f -X POST http://localhost:8080/test \
+            -H "Content-Type: application/json" | python -m json.tool
+
+          # Stop server
+          kill $SERVER_PID
+
+      - name: Job summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## Incident responder test
+
+          - Health check passed
+          - Test alert fired to Claude API
+          - Slack notification sent to #incidents channel
+          EOF
