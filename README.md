@@ -1,6 +1,6 @@
 # IDP Platform
 
-An Internal Developer Platform built on Azure that lets engineers provision fully configured, policy-compliant Kubernetes environments by describing what they need in plain English — no DevOps ticket, no waiting, no manual configuration.
+An Internal Developer Platform built on Azure that lets engineers provision fully configured, policy-compliant Kubernetes environments by describing what they need in plain English, no DevOps ticket, no waiting, no manual configuration.
 
 Built as a portfolio project to demonstrate end-to-end cloud infrastructure engineering: infrastructure as code, GitOps, secrets management, policy enforcement, and AI-assisted automation.
 
